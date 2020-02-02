@@ -2,45 +2,13 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"time"
 
 	"github.com/gdamore/tcell"
+	"github.com/the-wendell/go-ants/backend"
+	"github.com/the-wendell/go-ants/render"
 )
-
-func makebox(s tcell.Screen) {
-	w, h := s.Size()
-
-	if w == 0 || h == 0 {
-		return
-	}
-
-	glyphs := []rune{'@', '#', '&', '*', '=', '%', 'Z', 'A'}
-
-	lx := rand.Int() % w
-	ly := rand.Int() % h
-	lw := rand.Int() % (w - lx)
-	lh := rand.Int() % (h - ly)
-	st := tcell.StyleDefault
-	gl := ' '
-	if s.Colors() > 256 {
-		rgb := tcell.NewHexColor(int32(rand.Int() & 0xffffff))
-		st = st.Background(rgb)
-	} else if s.Colors() > 1 {
-		st = st.Background(tcell.Color(rand.Int() % s.Colors()))
-	} else {
-		st = st.Reverse(rand.Int()%2 == 0)
-		gl = glyphs[rand.Int()%len(glyphs)]
-	}
-
-	for row := 0; row < lh; row++ {
-		for col := 0; col < lw; col++ {
-			s.SetContent(lx+col, ly+row, gl, []rune{}, st)
-		}
-	}
-	s.Show()
-}
 
 func main() {
 
@@ -79,22 +47,62 @@ func main() {
 		}
 	}()
 
-	cnt := 0
-	dur := time.Duration(0)
+	// cells := [][]render.Cell{
+	// 	{{10, 0, 'A'}, {10, 0, 'A'}, {10, 0, 'A'}, {10, 0, 'A'}},
+	// 	{{70, 20, 'A'}, {80, 30, 'A'}, {90, 40, 'A'}, {100, 50, 'A'}},
+	// 	{{70, 20, 'A'}, {80, 30, 'A'}, {90, 40, 'A'}, {100, 50, 'A'}},
+	// 	{{70, 20, 'A'}, {80, 30, 'A'}, {90, 40, 'A'}, {100, 50, 'A'}},
+	// 	{{70, 20, 'A'}, {80, 30, 'A'}, {90, 40, 'A'}, {100, 50, 'A'}},
+	// 	{{1, 10, 'A'}, {1, 10, 'A'}, {1, 10, 'A'}, {1, 10, 'A'}},
+	// }
+
+	wall := backend.GameObject{Solid: true, Sprite: backend.SpriteDirt, ForegroundColor: backend.ColorForegroundDirt, BackgroundColor: backend.ColorBackgroundDirt}
+	tunn := backend.GameObject{Solid: false, Sprite: backend.SpriteTunnel, ForegroundColor: backend.ColorForegroundTunnel, BackgroundColor: backend.ColorBackgroundTunnel}
+
+	gameState := [][]backend.GameObject{
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, wall},
+		{wall, wall, wall, wall, wall, wall, wall, tunn, tunn, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, tunn, tunn, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, tunn, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, tunn, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+	}
+
+	ants := []backend.Ant{
+		{CurrentPosition: backend.Coords{2, 6}, PreviousPosition: backend.Coords{3, 6}},
+	}
+
+	for row := 0; row < len(gameState); row++ {
+		for col := 0; col < len(gameState[0]); col++ {
+			gameState[row][col].Position = backend.Coords{col, row}
+		}
+	}
+
+	timer := time.NewTimer(time.Second / 2)
+
+	state := backend.GameState{Ants: ants, World: gameState}
+	render.DrawScreen(s, state.RenderState())
 loop:
 	for {
 		select {
 		case <-quit:
 			break loop
-		case <-time.After(time.Millisecond * 50):
+		case <-timer.C:
+			state.RunGameStep()
+			render.DrawScreen(s, state.RenderState())
+
+			timer.Reset(time.Second / 2)
 		}
-		start := time.Now()
-		makebox(s)
-		cnt++
-		dur += time.Now().Sub(start)
 	}
 
 	s.Fini()
-	fmt.Printf("Finished %d boxes in %s\n", cnt, dur)
-	fmt.Printf("Average is %0.3f ms / box\n", (float64(dur)/float64(cnt))/1000000.0)
 }
