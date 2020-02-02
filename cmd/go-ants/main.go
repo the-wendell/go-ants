@@ -72,6 +72,12 @@ func main() {
 		{wall, wall, wall, wall, wall, wall, wall, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, tunn, wall, wall, wall, wall},
 		{wall, wall, wall, wall, wall, wall, wall, tunn, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
 		{wall, wall, wall, wall, wall, wall, wall, tunn, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
+		{wall, wall, wall, wall, wall, wall, wall, wall, tunn, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
 		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
 		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
 		{wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall, wall},
@@ -79,6 +85,7 @@ func main() {
 
 	ants := []backend.Ant{
 		{CurrentPosition: backend.Coords{2, 6}, PreviousPosition: backend.Coords{3, 6}},
+		{CurrentPosition: backend.Coords{6, 6}, PreviousPosition: backend.Coords{5, 6}},
 	}
 
 	for row := 0; row < len(gameState); row++ {
@@ -99,7 +106,6 @@ loop:
 		case <-timer.C:
 			state.RunGameStep()
 			render.DrawScreen(s, state.RenderState())
-
 			timer.Reset(time.Second / 2)
 		}
 	}

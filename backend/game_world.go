@@ -10,12 +10,12 @@ import (
 
 const SpriteAnt = 'a'
 const SpriteTunnel = ' '
-const SpriteDirt = '#'
+const SpriteDirt = ' '
 const SpriteFood = '@'
 
 const ColorAntForeground = 100
-const ColorBackgroundDirt = 200
-const ColorForegroundDirt = 180
+const ColorBackgroundDirt = 30
+const ColorForegroundDirt = 40
 const ColorBackgroundTunnel = 50
 const ColorForegroundTunnel = 0
 

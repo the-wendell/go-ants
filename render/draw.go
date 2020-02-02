@@ -17,7 +17,7 @@ func DrawScreen(s tcell.Screen, cells [][]Cell) {
 			st = st.Foreground(tcell.Color(cell.Forground))
 			st = st.Background(tcell.Color(cell.Background))
 
-			sprite, _, style, _ := s.GetContent(row, col)
+			sprite, _, style, _ := s.GetContent(col, row)
 			if sprite == cell.Sprite && style == st {
 				continue
 			}
