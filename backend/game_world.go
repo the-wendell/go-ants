@@ -24,9 +24,11 @@ const sentFood = "FOOD"
 var emptyUUID uuid.UUID
 
 type Ant struct {
-	CurrentPosition    Coords
-	PreviousPosition   Coords
-	CurrentSentTrailID uuid.UUID
+	CurrentPosition      Coords
+	PreviousPosition     Coords
+	followingSentTrailID uuid.UUID
+	trailingSentTrailID  uuid.UUID
+	HasFood              bool
 }
 
 func (a *Ant) moveTo(newPosition Coords) {
@@ -36,6 +38,8 @@ func (a *Ant) moveTo(newPosition Coords) {
 
 func (a *Ant) wander(nearbyCells surroundingCells) {
 	var unvisitedCells []GameObject
+
+	// TODO: if currentCell hasFood? { pickUpFood; followSentTrail(foodStorageSentTrail); return }
 
 	for _, cell := range nearbyCells.toSlice() {
 		if cell.Position != a.PreviousPosition {
@@ -56,19 +60,24 @@ func (a *Ant) wander(nearbyCells surroundingCells) {
 }
 
 func (a *Ant) followSentTrail(trail sentTrail, currentCell GameObject, nearbyCells surroundingCells) {
-	weakestSentTrail, _ := currentCell.findSentTrail(a.CurrentSentTrailID)
+	weakestSentTrail, _ := currentCell.findSentTrail(a.followingSentTrailID)
 	cellWithWeakestSentTrail := &currentCell
 
 	for _, cell := range nearbyCells.toSlice() {
-		trail, found := cell.findSentTrail(a.CurrentSentTrailID)
+		trail, found := cell.findSentTrail(a.followingSentTrailID)
 		if found && trail.strength < weakestSentTrail.strength {
 			cellWithWeakestSentTrail = cell
 		}
 	}
 
 	if cellWithWeakestSentTrail != &currentCell {
+		// TODO:
+		// if a.HasFood { a.leaveSentTrail }
 		a.moveTo(cellWithWeakestSentTrail.Position)
 	}
+	// TODO:
+	// else if currentCell == foodStorageCell { dropFood; a.CurrentSentTrailID = emptyUUID }
+	// else { pickUpFood; followSentTrail(foodStorageSentTrail) }
 }
 
 type Coords struct {
@@ -80,6 +89,7 @@ type sentTrail struct {
 	ID         uuid.UUID
 	strength   int
 	typeOfSent string
+	hiveTrail  bool
 }
 
 type surroundingCells struct {
@@ -119,6 +129,7 @@ type GameObject struct {
 	ForegroundColor int
 	BackgroundColor int
 	Position        Coords
+	FoodCount       int
 }
 
 func (g GameObject) toCell() render.Cell {

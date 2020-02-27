@@ -38,7 +38,7 @@ func (g *GameState) RunGameStep() {
 	for i, ant := range g.Ants {
 		currentCell := g.getCell(ant.CurrentPosition)
 		nearbyCells := g.getNeighbors(ant.CurrentPosition)
-		currentSentTrail, currentSentTrailFound := currentCell.findSentTrail(ant.CurrentSentTrailID)
+		currentSentTrail, currentSentTrailFound := currentCell.findSentTrail(ant.followingSentTrailID)
 		a := &g.Ants[i]
 
 		if currentSentTrailFound {
@@ -48,11 +48,13 @@ func (g *GameState) RunGameStep() {
 		} else if nearbyCells.anySentTrails() {
 			nextCell := nearbyCells.cellWithStrongestSentTrail()
 			a.moveTo(nextCell.Position)
-			a.CurrentSentTrailID = nextCell.strongestSentTrail().ID
+			a.followingSentTrailID = nextCell.strongestSentTrail().ID
 		} else {
 			a.wander(nearbyCells)
 		}
 	}
+	// TODO: decayAntSentTrails
+	// TODO: propigateHiveSentTrails
 }
 
 func (w *GameState) getCell(position Coords) *GameObject {
